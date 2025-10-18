@@ -4,8 +4,7 @@ Este documento explica como trabalhar com o projeto durante o desenvolvimento, q
 
 ## 🚀 Iniciando o Projeto
 
-# Limpar cache do Docker
-
+# Limpar cache do Docker (se for o caso)
 docker system prune -f
 
 ### Primeira vez (PC novo)
@@ -13,7 +12,6 @@ docker system prune -f
 ```bash
 # Windows (powershell)
 scripts\setup-dev.bat
-
 # Linux/Mac (se estiver no terminal bash)
 ./scripts/setup-dev.sh
 ```
@@ -29,7 +27,7 @@ docker-compose -f docker-compose.dev.yml up -d
 
 ## 🔄 Quando Rebuildar vs Quando Apenas Restart
 
-### ✅ PRECISA REBUILDAR (`docker-compose up --build -d`)
+### ✅ QUANDO PRECISA REBUILDAR (`docker-compose up --build -d`):
 
 **1. Mudanças no Dockerfile**
 
@@ -75,7 +73,7 @@ model User {
 }
 ```
 
-### ✅ NÃO PRECISA REBUILDAR (apenas restart)
+### ✅ QUANDO NÃO PRECISA REBUILDAR (apenas restart)
 
 **1. Mudanças no código da aplicação**
 
