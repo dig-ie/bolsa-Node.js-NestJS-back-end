@@ -18,11 +18,17 @@
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",
+    "@nestjs/config": "^3.3.0",
     "@nestjs/core": "^11.0.1",
+    "@nestjs/jwt": "^10.2.0",
+    "@nestjs/passport": "^10.0.3",
     "@nestjs/platform-express": "^11.0.1",
     "@prisma/client": "^6.16.2",
+    "bcrypt": "^6.0.0",
     "bcryptjs": "^3.0.2",
     "class-validator": "^0.14.2",
+    "passport": "^0.7.0",
+    "passport-jwt": "^4.0.1",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1"
   },
