@@ -16,7 +16,7 @@ services:
       - CHOKIDAR_USEPOLLING=true
       - CHOKIDAR_INTERVAL=300
     volumes:
-      # monta seu projeto no container (reload instantâneo)
+      # monta o projeto no container (reload instantâneo)
       - ./:/usr/src/app:cached
       # evita conflito de node_modules host ↔ container
       - /usr/src/app/node_modules

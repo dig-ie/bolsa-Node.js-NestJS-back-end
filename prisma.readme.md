@@ -1,9 +1,33 @@
 # 📘 Guia Rápido — Prisma + PostgreSQL
-
 Este projeto usa **Prisma ORM** com **PostgreSQL**.  
 Aqui está o fluxo básico para mexer no banco **sem dor de cabeça**.
-
 ---
+## ⚙️ 0.0 (observação para entendimento) O comando que gera o client
+Quando você roda:
+```bash
+npx prisma generate
+```
+ou quando você roda uma migração:
+```bash
+npx prisma migrate dev
+```
+o Prisma cria o **Prisma Client** (em `node_modules/@prisma/client`).
+Esse client contém uma classe `PrismaClient` com propriedades baseadas em cada `model` que existe no schema.
+No exemplo acima, como existe `model User`, o client vai gerar algo equivalente a:
+```ts
+class PrismaClient {
+  user: {
+    create(...)
+    findMany(...)
+    findUnique(...)
+    update(...)
+    delete(...)
+    // etc
+  }
+  // Se tivesse outro model:
+  // post: { create, findMany, ... }
+}
+```
 
 ## 🚀 1. Primeira vez no projeto
 
