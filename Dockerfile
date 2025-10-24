@@ -20,7 +20,7 @@ COPY . .
 RUN npx prisma generate
 
 # Build para prod (em dev isso é sobrescrito pelo bind-mount)
-RUN pnpm run build --silent || true
+RUN pnpm run build
 
 # Default: start prod
 CMD ["node", "dist/main.js"]
