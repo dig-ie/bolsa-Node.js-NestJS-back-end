@@ -13,14 +13,14 @@ COPY package.json pnpm-lock.yaml ./
 # Instala dependências
 RUN pnpm install --no-frozen-lockfile
 
-# Copia o restante do código
+# Copia todos os arquivos necessários de uma vez
 COPY . .
 
 # Gera o cliente Prisma
 RUN npx prisma generate
 
 # Build para prod (em dev isso é sobrescrito pelo bind-mount)
-RUN pnpm run build --silent || true
+RUN pnpm run build
 
 # Default: start prod
-CMD ["node", "dist/main.js"]
+CMD ["node", "dist/src/main.js"]

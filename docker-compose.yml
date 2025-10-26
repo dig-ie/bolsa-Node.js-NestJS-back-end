@@ -1,14 +1,15 @@
-version: "3.8"
 services:
   api:
     build: .
     container_name: bolsa-api-nest
-    command: ["node", "dist/main.js"]
+    command: ["node", "dist/src/main.js"]
     restart: unless-stopped
     ports:
       - "3000:3000"
     environment:
       - NODE_ENV=production
+      - JWT_SECRET=your-super-secret-jwt-key-here
+      - DATABASE_URL=postgresql://user:bolsa2024!@db:5432/bolsa_sim
     depends_on:
       - db
   db:

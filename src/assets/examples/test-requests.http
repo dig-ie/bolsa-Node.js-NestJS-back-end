@@ -7,7 +7,8 @@ Content-Type: application/json
 
 {
   "name": "Petróleo Brasileiro S.A.",
-  "symbol": "PETR4"
+  "symbol": "PETR4",
+  "price": 25.0
 }
 
 ### 2. Criar outro asset
@@ -16,7 +17,8 @@ Content-Type: application/json
 
 {
   "name": "Vale S.A.",
-  "symbol": "VALE3"
+  "symbol": "VALE3",
+  "price": 50.75
 }
 
 ### 3. Listar todos os assets
@@ -42,7 +44,8 @@ Content-Type: application/json
 
 {
   "name": "",
-  "symbol": "TEST"
+  "symbol": "TEST",
+  "price": 10.0
 }
 
 ### 8. Teste de validação - Símbolo inválido

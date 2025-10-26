@@ -4,6 +4,7 @@ import request from 'supertest';
 import { AppModule } from '../src/app.module';
 import { PrismaService } from '../src/common/prisma.service';
 
+
 describe('Assets - All Routes (e2e)', () => {
   let app: INestApplication;
   let prismaService: PrismaService;
