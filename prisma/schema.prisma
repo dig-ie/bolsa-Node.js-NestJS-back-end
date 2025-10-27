@@ -21,4 +21,29 @@ model User {
   role      String   @default("user")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  wallet    Wallet?
+}
+
+model Wallet {
+  id          String       @id @default(uuid())
+  userId      String       @unique
+  totalValue  Float        @default(0)
+  totalProfit Float        @default(0)
+  rentability Float        @default(0)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  items       WalletItem[]
+  user        User         @relation(fields: [userId], references: [id])
+}
+
+model WalletItem {
+  id           String @id @default(uuid())
+  walletId     String
+  assetId      String
+  quantity     Float
+  avgBuyPrice  Float
+  currentPrice Float
+  profit       Float
+  wallet       Wallet @relation(fields: [walletId], references: [id])
+  // assets        Assets   @relation(fields: [assetId], references: [id])
 }
