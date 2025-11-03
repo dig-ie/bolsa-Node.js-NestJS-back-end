@@ -22,3 +22,25 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+enum OrderType {
+  BUY
+  SELL
+}
+
+enum OrderStatus {
+  PENDING
+  EXECUTED
+  CANCELED
+}
+
+model Order {
+  id        String       @id @default(uuid())
+  userId    String
+  assetId   Int
+  type      OrderType
+  status    OrderStatus  @default(PENDING)
+  quantity  Int
+  price     Float
+  createdAt DateTime     @default(now())
+}
