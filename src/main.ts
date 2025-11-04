@@ -34,10 +34,10 @@ async function bootstrap() {
   const port = process.env.PORT ?? 3000;
   await app.listen(process.env.PORT ?? 3000);
 
-  logger.log(`🚀 Aplicação rodando na porta ${port}`);
-  logger.log(
-    `📚 Documentação Swagger disponível em: http://localhost:${port}/api/docs`
-  );
+  app.enableCors({
+    origin: process.env.CORS_ORIGIN || "*",
+    credentials: true,
+  });
 
   // ** 🧩 Enables global validation for all DTOs
   app.useGlobalPipes(

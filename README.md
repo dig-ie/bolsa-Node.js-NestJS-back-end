@@ -1,5 +1,8 @@
 # Bolsa API - Arquitetura Monolítica Modular
 
+## Link para o Front e readme geral de explicação sobre a proposta do projeto: 
+- https://github.com/dig-ie/bolsa-Next.js-React.js-front-end
+
 ## Estrutura de Pastas
 
 ```
@@ -8,7 +11,7 @@ bolsa-api-nest/
 │   ├── app.module.ts
 │   ├── users/
 │   ├── assets/
-│   ├── portfolio/
+│   ├── wallet/
 │   ├── orders/
 │   ├── simulation/
 │   ├── auth/
@@ -22,8 +25,114 @@ bolsa-api-nest/
 ├── package.json
 └── pnpm-lock.yaml
 ```
+# 🧩 Módulos Principais — Valorim API (Arquitetura Modular)
+---
 
-## Organização Modular
+## 💼 `wallet/` (antigo `portfolio/`)
+
+### 📘 O que é  
+Gerencia **os ativos que o usuário possui** dentro da simulação — quantidades, preços de compra, valor atual e lucro/prejuízo acumulado.
+
+### 🧠 No contexto do Valorim  
+- É a **carteira simulada** do usuário, mostrando o resultado consolidado das suas operações.  
+- Reúne dados dos módulos `orders` e `assets`.  
+- Serve de base para o dashboard do usuário e relatórios de desempenho.  
+
+### ⚙️ Responsabilidades
+- Calcular **saldo total**, **variação acumulada** e **rentabilidade**.  
+- Armazenar o **estado atual** da carteira simulada.  
+- Expor endpoints como:
+  - `GET /wallet` → Retorna todos os ativos da carteira.  
+  - `GET /wallet/summary` → Mostra saldo total, lucro/prejuízo e evolução.
+
+### 💡 Em resumo  
+> É o módulo que **agrega e resume** tudo o que o usuário possui na simulação.  
+> Exemplo: “O usuário possui 3 TEC11 e 5 FINV3, lucro total: +12%.”
+
+---
+
+## 🛒 `orders/`
+
+### 📘 O que é  
+Gerencia todas as **ordens de compra e venda** criadas pelo usuário dentro do ambiente simulado.
+
+### 🧠 No contexto do Valorim  
+- Cada ordem representa uma ação individual do usuário (ex: “comprar 5 TEC11 a R$120”).  
+- As ordens alimentam diretamente a **carteira (`wallet`)** e o **histórico**.  
+- É o módulo responsável por **registrar as transações** simuladas, mesmo que não envolvam dinheiro real.
+
+### ⚙️ Responsabilidades
+- Criar e armazenar **ordens de compra e venda**.  
+- Validar **saldo disponível** e **quantidade de ativos**.  
+- Registrar **timestamp**, **tipo de operação** e **preço executado**.  
+- Alimentar o histórico e atualizar o módulo `wallet`.
+
+### 💡 Em resumo  
+> São os **movimentos da simulação** — cada ação que o usuário executa.  
+> Exemplo: “Comprar 10 ações de TEC11” ou “Vender 5 ações de FINV3”.
+
+---
+
+## 📊 `simulation/`
+
+### 📘 O que é  
+Define e controla o **comportamento do mercado fictício** — os preços dos ativos, suas variações e regras de oscilação.  
+
+Em APIs de trading, esse módulo costuma ser responsável por simular ticks em tempo real, mas no **Valorim** (simulação educacional) ele tem um papel **mais conceitual e orquestrador**.
+
+### 🧠 No contexto do Valorim  
+- É o **motor de simulação de mercado** que define como os preços dos ativos mudam ao longo do tempo.  
+- Pode gerar cotações fictícias de forma programada (ex: variação aleatória a cada minuto).  
+- Ou consumir uma **API externa de dados de mercado**, apenas para leitura e adaptação educacional.  
+- Serve como **camada de integração, cache e controle de regras** sobre as cotações exibidas no front-end.
+
+### ⚙️ Responsabilidades
+- Gerar ou atualizar **cotações simuladas** periodicamente.  
+- Definir regras de oscilação (ex: variação entre -2% e +2%).  
+- Registrar as cotações em banco (para gráficos e histórico).  
+- Expor endpoints como:
+  - `GET /simulation/assets` → Lista de ativos com preço atual e variação.  
+  - `GET /simulation/:id` → Detalhes da simulação (modo, data, etc.).  
+
+### 💡 Em resumo  
+> O módulo que **gera ou orquestra os dados de mercado fictício**.  
+> Ele fornece o “cenário” em que os usuários interagem.  
+
+---
+
+## 🔗 Relação entre os módulos
+
+```mermaid
+graph LR
+A[simulation] --> B[assets]
+B --> C[orders]
+C --> D[wallet]
+```
+
+- `simulation` → Gera o ambiente e os preços fictícios.  
+- `orders` → Executa as ações do usuário dentro desse ambiente.  
+- `wallet` → Consolida o resultado de todas as ordens.
+
+---
+
+## 🧭 Integração com APIs Externas
+
+Mesmo consumindo dados de uma **API externa**, o módulo `simulation` **ainda é necessário**, pois ele:
+- controla a lógica interna da simulação (ex: modo, regras, duração);  
+- atua como **cache local** para evitar depender de chamadas externas em tempo real;  
+- mantém as regras pedagógicas do Valorim (por exemplo, simular comportamento de mercado, não o mercado real).
+
+---
+
+## ✅ Resumo Final acerca dos 3 módulos principais descritos acima
+
+| Módulo | Responsabilidade | Tipo | Exemplo |
+|---------|------------------|------|----------|
+| `wallet` | Armazena e calcula a carteira do usuário | Estado do usuário | “O usuário possui 10 ações de TEC11 e 3 de VLR3.” |
+| `orders` | Registra as ordens de compra e venda | Ação do usuário | “Comprar 5 ações de TEC11 a R$100.” |
+| `simulation` | Controla o comportamento do mercado fictício | Ambiente do sistema | “TEC11 sobe 1.2% em 24h.” |
+
+## Organização Modular (referindo-se a todos os módulos)
 
 - Cada domínio (ex: `users`, `assets`, `orders`) tem seu próprio módulo, controller, service e modelos.
 - Todos os módulos rodam juntos em uma única aplicação backend.
