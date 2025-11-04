@@ -160,5 +160,5 @@ export class AssetsService {
   private isValidId(id: number): boolean {
     return Number.isInteger(id) && id > 0;
   }
-
+  
 }
