@@ -5,12 +5,14 @@ import { AssetsModule } from "./assets/assets.module";
 import { UsersModule } from "./users/users.module";
 import { AuthModule } from "./auth/auth.module";
 import { ConfigModule } from "@nestjs/config";
+import { OrdersModule } from "./orders/order.module";
 
 @Module({
   imports: [
     AssetsModule,
     UsersModule,
     AuthModule,
+    OrdersModule,
     ConfigModule.forRoot({
       isGlobal: true,
     }),
