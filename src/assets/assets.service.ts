@@ -1,46 +1,164 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
+import { PrismaService } from '../common/prisma.service';
 import { CreateAssetDto } from './dto/create-asset.dto';
 import { UpdateAssetDto } from './dto/update-asset.dto';
-
-export interface Asset {
-  id: number;
-  name: string;
-  symbol: string;
-}
+import { 
+  AssetNotFoundException, 
+  AssetAlreadyExistsException, 
+  InvalidAssetDataException,
+  AssetServiceException
+} from './exceptions/custom-exceptions';
 
 @Injectable()
 export class AssetsService {
-  private assets: Asset[] = [];
-  private nextId = 1;
+  constructor(private prisma: PrismaService) {}
 
-  create(createAssetDto: CreateAssetDto): Asset {
-    const asset: Asset = {
-      id: this.nextId++,
-      ...createAssetDto,
-    };
-    this.assets.push(asset);
-    return asset;
+  async create(createAssetDto: CreateAssetDto) {
+    try {
+    
+      const existingAsset = await this.prisma.assets.findUnique({
+        where: { symbol: createAssetDto.symbol.toUpperCase() }
+      });
+
+      if (existingAsset) {
+        throw new AssetAlreadyExistsException(createAssetDto.symbol);
+      }
+
+    
+      const asset = await this.prisma.assets.create({
+        data: {
+          ...createAssetDto,
+          symbol: createAssetDto.symbol.toUpperCase(),
+        }
+      });
+
+      return {
+        ...asset,
+        price: parseFloat((asset as any).price.toString())
+      };
+    } catch (error) {
+      if (error instanceof AssetAlreadyExistsException) {
+        throw error;
+      }
+      throw new AssetServiceException('Failed to create asset', error);
+    }
   }
 
-  findAll(): Asset[] {
-    return this.assets;
+  async findAll() {
+    try {
+      const assets = await this.prisma.assets.findMany({
+        where: { isActive: true },
+        orderBy: { createdAt: 'desc' }
+      });
+      
+      return assets.map(asset => ({
+        ...asset,
+        price: parseFloat((asset as any).price.toString())
+      }));
+    } catch (error) {
+      throw new AssetServiceException('Failed to fetch assets', error);
+    }
   }
 
-  findOne(id: number): Asset {
-    const asset = this.assets.find(a => a.id === id);
-    if (!asset) throw new NotFoundException('Ativo não encontrado');
-    return asset;
+  async findOne(id: number) {
+    try {
+      if (!this.isValidId(id)) {
+        throw new BadRequestException('ID must be a positive number');
+      }
+
+      const asset = await this.prisma.assets.findUnique({
+        where: { id }
+      });
+
+      if (!asset) {
+        throw new AssetNotFoundException(id);
+      }
+
+      return {
+        ...asset,
+        price: parseFloat((asset as any).price.toString())
+      };
+    } catch (error) {
+      if (error instanceof AssetNotFoundException || error instanceof BadRequestException) {
+        throw error;
+      }
+      throw new AssetServiceException('Failed to fetch asset', error);
+    }
   }
 
-  update(id: number, updateAssetDto: UpdateAssetDto): Asset {
-    const asset = this.findOne(id);
-    Object.assign(asset, updateAssetDto);
-    return asset;
+  async update(id: number, updateAssetDto: UpdateAssetDto) {
+    try {
+      if (!this.isValidId(id)) {
+        throw new BadRequestException('ID must be a positive number');
+      }
+      
+      if (Object.keys(updateAssetDto).length === 0) {
+        throw new BadRequestException('At least one field must be provided for update');
+      }
+
+     
+      await this.findOne(id);
+
+     
+      if (updateAssetDto.symbol) {
+        const existingAsset = await this.prisma.assets.findFirst({
+          where: { 
+            symbol: updateAssetDto.symbol.toUpperCase(),
+            id: { not: id }
+          }
+        });
+
+        if (existingAsset) {
+          throw new AssetAlreadyExistsException(updateAssetDto.symbol);
+        }
+      }
+
+      
+      const asset = await this.prisma.assets.update({
+        where: { id },
+        data: {
+          ...updateAssetDto,
+          symbol: updateAssetDto.symbol?.toUpperCase(),
+        }
+      });
+
+      return {
+        ...asset,
+        price: parseFloat((asset as any).price.toString())
+      };
+    } catch (error) {
+      if (error instanceof AssetNotFoundException || 
+          error instanceof AssetAlreadyExistsException ||
+          error instanceof BadRequestException) {
+        throw error;
+      }
+      throw new AssetServiceException('Failed to update asset', error);
+    }
   }
 
-  remove(id: number): void {
-    const index = this.assets.findIndex(a => a.id === id);
-    if (index === -1) throw new NotFoundException('Ativo não encontrado');
-    this.assets.splice(index, 1);
+  async remove(id: number) {
+    try {
+      if (!this.isValidId(id)) {
+        throw new BadRequestException('ID must be a positive number');
+      }
+
+    
+      await this.findOne(id);
+
+      await this.prisma.assets.update({
+        where: { id },
+        data: { isActive: false }
+      });
+    } catch (error) {
+      if (error instanceof AssetNotFoundException || error instanceof BadRequestException) {
+        throw error;
+      }
+      throw new AssetServiceException('Failed to remove asset', error);
+    }
   }
+
+  private isValidId(id: number): boolean {
+    return Number.isInteger(id) && id > 0;
+  }
+  
 }
