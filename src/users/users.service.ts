@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { PrismaService } from "../common/prisma.service"; 
+import { PrismaService } from "../common/prisma.service";
 import { CreateUserDto } from "./dto/create-user.dto";
 import * as bcrypt from "bcryptjs";
 
@@ -24,5 +24,38 @@ export class UsersService {
 
   async findById(id: string) {
     return this.prisma.user.findUnique({ where: { id } });
+  }
+
+  async findAll() {
+    return this.prisma.user.findMany({
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        createdAt: true,
+        updatedAt: true,
+        // Não retorna senha por segurança
+      },
+    });
+  }
+
+  async findOne(id: string) {
+    return this.prisma.user.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        createdAt: true,
+        updatedAt: true,
+        // Não retorna senha por segurança
+      },
+    });
+  }
+
+  async remove(id: string) {
+    return this.prisma.user.delete({ where: { id } });
   }
 }
