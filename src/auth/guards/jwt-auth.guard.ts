@@ -51,4 +51,11 @@ export class JwtAuthGuard extends AuthGuard("jwt") {
     // que irá validar o JWT usando a JwtStrategy
     return super.canActivate(context);
   }
+
+  handleRequest(err, user, info) {
+    if (err || !user) {
+      return null; // vai gerar 401 automaticamente
+    }
+    return user;
+  }
 }

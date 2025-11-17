@@ -1,39 +1,36 @@
-import { Controller, Post, Body, Get } from "@nestjs/common";
+import { Controller, Post, Body, Get, Res } from "@nestjs/common";
+import { type Response } from "express";
 import { AuthService } from "./auth.service";
 import { LoginDto } from "./dto/login.dto";
 import { Public } from "./decorators/public.decorator";
 import { CurrentUser } from "./decorators/current-user.decorator";
 
-/**
- * 🔓 Auth Controller
- *
- * Gerencia autenticação e informações do usuário.
- *
- * ROTAS PÚBLICAS:
- * - POST /auth/login - Qualquer pessoa pode fazer login
- *
- * ROTAS PROTEGIDAS:
- * - GET /auth/profile - Apenas usuários autenticados
- */
 @Controller("auth")
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  /**
-   * 🌍 Rota pública de login
-   * @Public() remove a necessidade de autenticação
-   */
   @Public()
   @Post("login")
-  async login(@Body() dto: LoginDto) {
-    return this.authService.login(dto.email, dto.password);
+  async login(
+    @Body() dto: LoginDto,
+    @Res({ passthrough: true }) res: Response
+  ) {
+    const { token, user } = await this.authService.login(
+      dto.email,
+      dto.password
+    );
+
+    // 🧩 Define o cookie httpOnly
+    res.cookie("token_httpOnly", token, {
+      httpOnly: true,
+      secure: false, // true somente em produção HTTPS
+      sameSite: "lax",
+      path: "/",
+    });
+
+    return { user };
   }
 
-  /**
-   * 🔐 Rota protegida - perfil do usuário
-   * Apenas usuários autenticados podem acessar
-   * Demonstra o uso do decorator @CurrentUser()
-   */
   @Get("profile")
   async getProfile(@CurrentUser() user: any) {
     return {
