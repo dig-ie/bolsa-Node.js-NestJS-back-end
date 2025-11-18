@@ -2,6 +2,7 @@ import { NestFactory } from "@nestjs/core";
 import { ValidationPipe, Logger } from "@nestjs/common";
 import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
 import { AppModule } from "./app.module";
+import cookieParser from "cookie-parser";
 import { HttpExceptionFilter } from "./common/filters/http-exception.filter";
 
 async function bootstrap() {
@@ -9,13 +10,8 @@ async function bootstrap() {
 
   const app = await NestFactory.create(AppModule);
 
+  app.use(cookieParser());
   app.useGlobalFilters(new HttpExceptionFilter());
-
-  app.enableCors({
-    origin: process.env.CORS_ORIGIN || "*",
-    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-  });
 
   const config = new DocumentBuilder()
     .setTitle("Bolsa API")
@@ -31,26 +27,21 @@ async function bootstrap() {
     },
   });
 
-  const port = process.env.PORT ?? 3000;
-  await app.listen(process.env.PORT ?? 3000);
-
   app.enableCors({
-    origin: process.env.CORS_ORIGIN || "*",
+    origin: "http://localhost:3001",
     credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
   });
 
-  // ** 🧩 Enables global validation for all DTOs
   app.useGlobalPipes(
     new ValidationPipe({
-      whitelist: true, // automatically removes properties not defined in the DTO class
-      forbidNonWhitelisted: true, // throws an error if unknown properties are present in the request
-      transform: true, // converts plain JavaScript objects into instances of their corresponding DTO classes
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
     })
   );
+
+  await app.listen(process.env.PORT ?? 3000);
 }
 
-bootstrap().catch((error) => {
-  const logger = new Logger("Bootstrap");
-  logger.error("❌ Erro ao iniciar a aplicação:", error);
-  process.exit(1);
-});
+bootstrap();
