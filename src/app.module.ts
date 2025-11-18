@@ -34,7 +34,14 @@ import { RolesGuard } from "./auth/guards/roles.guard";
  * - Abordagem "secure by default, open by exception"
  */
 @Module({
-  imports: [AssetsModule],
+  imports: [
+    AssetsModule,
+    UsersModule,
+    AuthModule,
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
+  ],
   controllers: [AppController],
   providers: [
     AppService,

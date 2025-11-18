@@ -13,12 +13,6 @@ async function bootstrap() {
   app.use(cookieParser());
   app.useGlobalFilters(new HttpExceptionFilter());
 
-  app.enableCors({
-    origin: process.env.CORS_ORIGIN || "*",
-    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-  });
-
   const config = new DocumentBuilder()
     .setTitle("Bolsa API")
     .setDescription("API para sistema de bolsa de valores")
@@ -33,12 +27,10 @@ async function bootstrap() {
     },
   });
 
-  const port = process.env.PORT ?? 3000;
-  await app.listen(process.env.PORT ?? 3000);
-
   app.enableCors({
     origin: "http://localhost:3001",
     credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
   });
 
   app.useGlobalPipes(
