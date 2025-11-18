@@ -1,0 +1,79 @@
+### Exemplos de requisições para testar o CRUD de Assets
+### Use estas requisições no VS Code com a extensão REST Client
+
+### 1. Criar um novo asset
+POST http://localhost:3000/assets
+Content-Type: application/json
+
+{
+  "name": "Petróleo Brasileiro S.A.",
+  "symbol": "PETR4",
+  "price": 25.0
+}
+
+### 2. Criar outro asset
+POST http://localhost:3000/assets
+Content-Type: application/json
+
+{
+  "name": "Vale S.A.",
+  "symbol": "VALE3",
+  "price": 50.75
+}
+
+### 3. Listar todos os assets
+GET http://localhost:3000/assets
+
+### 4. Buscar asset por ID
+GET http://localhost:3000/assets/1
+
+### 5. Atualizar asset
+PUT http://localhost:3000/assets/1
+Content-Type: application/json
+
+{
+  "name": "Petróleo Brasileiro S.A. - Atualizado"
+}
+
+### 6. Remover asset
+DELETE http://localhost:3000/assets/1
+
+### 7. Teste de validação - Nome vazio
+POST http://localhost:3000/assets
+Content-Type: application/json
+
+{
+  "name": "",
+  "symbol": "TEST",
+  "price": 10.0
+}
+
+### 8. Teste de validação - Símbolo inválido
+POST http://localhost:3000/assets
+Content-Type: application/json
+
+{
+  "name": "Test Asset",
+  "symbol": "test-lowercase"
+}
+
+### 9. Teste de duplicação - Símbolo já existe
+POST http://localhost:3000/assets
+Content-Type: application/json
+
+{
+  "name": "Outro Asset",
+  "symbol": "PETR4"
+}
+
+### 10. Teste de ID inválido
+GET http://localhost:3000/assets/invalid-id
+
+### 11. Teste de asset não encontrado
+GET http://localhost:3000/assets/999
+
+### 12. Teste de atualização sem campos
+PUT http://localhost:3000/assets/1
+Content-Type: application/json
+
+{}
