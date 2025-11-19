@@ -23,4 +23,4 @@ RUN npx prisma generate
 RUN pnpm run build
 
 # Default: start prod
-CMD ["node", "dist/src/main.js"]
+CMD ["sh", "-c", "npx prisma migrate deploy && node dist/src/main.js"]
