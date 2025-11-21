@@ -27,8 +27,12 @@ async function bootstrap() {
     },
   });
 
+  const allowedOrigins = process.env.CORS_ORIGINS
+    ? process.env.CORS_ORIGINS.split(",").map((o) => o.trim())
+    : [];
+
   app.enableCors({
-    origin: "http://localhost:3001",
+    origin: allowedOrigins,
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
   });
