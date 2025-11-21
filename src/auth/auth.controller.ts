@@ -79,10 +79,12 @@ export class AuthController {
       dto.password
     );
 
+    const isProd = process.env.NODE_ENV === "production";
+
     res.cookie("token_httpOnly", token, {
       httpOnly: true,
-      secure: false, // true somente em produção HTTPS
-      sameSite: "lax",
+      secure: isProd, // true somente em produção HTTPS
+      sameSite: "none",
       path: "/",
     });
 
