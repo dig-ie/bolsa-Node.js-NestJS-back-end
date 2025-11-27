@@ -3,150 +3,119 @@ import { PrismaService } from '../common/prisma.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 
+
+const mockUsers = [
+  { id: 'u1', name: 'João Silva', email: 'joao@example.com' },
+  { id: 'u2', name: 'Maria Oliveira', email: 'maria@example.com' },
+  { id: 'u3', name: 'Carlos Pereira', email: 'carlos@example.com' },
+];
+
+
+const mockAssets = [
+  { id: 1, name: 'Tecnologia 11', symbol: 'TEC11' },
+  { id: 2, name: 'Finanças V3', symbol: 'FINV3' },
+  { id: 3, name: 'Energia Solar', symbol: 'ENER3' },
+  { id: 4, name: 'Agronegócio', symbol: 'AGRO4' },
+  { id: 5, name: 'Construção', symbol: 'CONS5' },
+];
+
+
+const DEFAULT_USER_ID = 'u1';
+
 @Injectable()
 export class OrdersService {
   constructor(private prisma: PrismaService) {}
 
-  // Assets mockados (até criar o model Asset no Prisma)
-  private mockAssets = [
-    { id: 1, name: 'Tecnologia 11', symbol: 'TEC11' },
-    { id: 2, name: 'Finanças V3', symbol: 'FINV3' },
-    { id: 3, name: 'Energia Solar', symbol: 'ENER3' },
-    { id: 4, name: 'Agronegócio', symbol: 'AGRO4' },
-    { id: 5, name: 'Construção', symbol: 'CONS5' },
-  ];
+  async create(userId: string, dto: CreateOrderDto) {
+    const { assetId, quantity, price, type } = dto;
 
-  async create(createOrderDto: CreateOrderDto) {
-    // Validar se o usuário existe no banco (via Prisma)
-    const user = await this.prisma.user.findUnique({
-      where: { id: createOrderDto.userId },
-    });
-    if (!user) {
-      throw new NotFoundException('Usuário não encontrado');
-    }
+    
+    const resolvedUserId = userId || DEFAULT_USER_ID;
 
-    // Validar se o ativo existe (via mock até criar model Asset)
-    const asset = this.mockAssets.find(a => a.id === createOrderDto.assetId);
-    if (!asset) {
-      throw new NotFoundException('Ativo não encontrado');
-    }
+    
+    const user = mockUsers.find(u => u.id === resolvedUserId);
+    if (!user) throw new NotFoundException('User not found (mock).');
 
-    // Validações básicas
-    if (createOrderDto.quantity <= 0) {
-      throw new BadRequestException('Quantidade deve ser maior que zero');
-    }
+   
+    const asset = mockAssets.find(a => a.id === assetId);
+    if (!asset) throw new NotFoundException('Asset not found (mock).');
 
-    if (createOrderDto.price <= 0) {
-      throw new BadRequestException('Preço deve ser maior que zero');
-    }
+    
+    if (quantity <= 0) throw new BadRequestException('Quantity must be greater than zero.');
+    if (price <= 0) throw new BadRequestException('Price must be greater than zero.');
+    if (!['BUY', 'SELL'].includes(type))
+      throw new BadRequestException('Type must be BUY or SELL.');
 
-    if (createOrderDto.type !== 'BUY' && createOrderDto.type !== 'SELL') {
-      throw new BadRequestException('Tipo deve ser BUY ou SELL');
-    }
-
-    // Criar order no banco usando Prisma (persistência real)
+   
     return this.prisma.order.create({
       data: {
-        userId: createOrderDto.userId,
-        assetId: createOrderDto.assetId,
-        type: createOrderDto.type,
-        quantity: createOrderDto.quantity,
-        price: createOrderDto.price,
-        // status tem default 'PENDING' no schema
+        userId: resolvedUserId, 
+        assetId,
+        quantity,
+        price,
+        type,
+        status: 'PENDING',
       },
     });
   }
 
   async findAll() {
     return this.prisma.order.findMany({
-      orderBy: {
-        createdAt: 'desc',
-      },
+      orderBy: { createdAt: 'desc' },
     });
   }
 
   async findOne(id: string) {
-
-    const order = await this.prisma.order.findUnique({
-      where: { id },
-    });
-    if (!order) {
-      throw new NotFoundException('Ordem não encontrada');
-    }
+    const order = await this.prisma.order.findUnique({ where: { id } });
+    if (!order) throw new NotFoundException('Order not found.');
     return order;
   }
 
   async findByUser(userId: string) {
-    // Validar se o usuário existe no banco
-    const user = await this.prisma.user.findUnique({
-      where: { id: userId },
-    });
-    if (!user) {
-      throw new NotFoundException('Usuário não encontrado');
-    }
+    const resolvedUserId = userId || DEFAULT_USER_ID;
 
-   
+    const user = mockUsers.find(u => u.id === resolvedUserId);
+    if (!user) throw new NotFoundException('User not found (mock).');
+
     return this.prisma.order.findMany({
-      where: { userId },
-      orderBy: {
-        createdAt: 'desc',
-      },
+      where: { userId: resolvedUserId },
+      orderBy: { createdAt: 'desc' },
     });
   }
 
   async findByAsset(assetId: number) {
-    // Validar se o ativo existe (mock)
-    const asset = this.mockAssets.find(a => a.id === assetId);
-    if (!asset) {
-      throw new NotFoundException('Ativo não encontrado');
-    }
-
+    const asset = mockAssets.find(a => a.id === assetId);
+    if (!asset) throw new NotFoundException('Asset not found (mock).');
 
     return this.prisma.order.findMany({
       where: { assetId },
-      orderBy: {
-        createdAt: 'desc',
-      },
+      orderBy: { createdAt: 'desc' },
     });
   }
 
-  async update(id: string, updateOrderDto: UpdateOrderDto) {
-    const order = await this.findOne(id);
+  async update(id: string, dto: UpdateOrderDto) {
+    const existing = await this.findOne(id);
 
-    if (order.status === 'EXECUTED' || order.status === 'CANCELED') {
-      throw new BadRequestException(
-        'Não é possível atualizar uma ordem já executada ou cancelada',
-      );
+    if (existing.status === 'EXECUTED' || existing.status === 'CANCELED') {
+      throw new BadRequestException('Cannot update executed or canceled order.');
     }
 
-   
     return this.prisma.order.update({
       where: { id },
-      data: updateOrderDto,
+      data: dto,
     });
   }
 
   async remove(id: string) {
-    const order = await this.findOne(id);
-    await this.prisma.order.delete({
-      where: { id },
-    });
-    return order;
+    await this.findOne(id);
+    return this.prisma.order.delete({ where: { id } });
   }
 
-  // Método auxiliar para listar assets mockados
   getMockAssets() {
-    return this.mockAssets;
+    return mockAssets;
   }
 
-  // Método auxiliar para listar usuários (via Prisma)
-  async getUsers() {
-    return this.prisma.user.findMany({
-      select: {
-        id: true,
-        email: true,
-        name: true,
-      },
-    });
+  getMockUsers() {
+    return mockUsers;
   }
 }

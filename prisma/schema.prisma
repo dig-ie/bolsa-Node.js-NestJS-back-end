@@ -43,4 +43,7 @@ model Order {
   quantity  Int
   price     Float
   createdAt DateTime     @default(now())
+
+ @@map("orders")
+
 }

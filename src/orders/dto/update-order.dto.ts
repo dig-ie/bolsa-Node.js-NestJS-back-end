@@ -1,22 +1,44 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
+import { IsEnum, IsNumber, IsOptional, IsPositive } from 'class-validator';
+
+export enum OrderStatusEnum {
+  PENDING = 'PENDING',
+  EXECUTED = 'EXECUTED',
+  CANCELED = 'CANCELED',
+}
 
 export class UpdateOrderDto {
-  @ApiPropertyOptional({
-    description: 'Updated status of the order',
-    enum: ['PENDING', 'EXECUTED', 'CANCELED'],
-    example: 'EXECUTED',
-  })
-  status?: 'PENDING' | 'EXECUTED' | 'CANCELED';
+  @ApiPropertyOptional()
+  @IsOptional()
+  userId?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  assetId?: number;
 
   @ApiPropertyOptional({
-    description: 'Updated quantity of the order. Must be greater than zero.',
-    example: 15,
+    enum: ['BUY', 'SELL'],
   })
+  @IsOptional()
+  @IsEnum(['BUY', 'SELL'])
+  type?: 'BUY' | 'SELL';
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsNumber()
+  @IsPositive()
   quantity?: number;
 
-  @ApiPropertyOptional({
-    description: 'Updated price of the order. Must be greater than zero.',
-    example: 120.50,
-  })
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsNumber()
+  @IsPositive()
   price?: number;
+
+  @ApiPropertyOptional({
+    enum: OrderStatusEnum,
+  })
+  @IsOptional()
+  @IsEnum(OrderStatusEnum)
+  status?: OrderStatusEnum;
 }
